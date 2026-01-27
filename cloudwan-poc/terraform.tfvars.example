@@ -1,0 +1,70 @@
+# CloudWAN POC Configuration Example
+# Copy this file to terraform.tfvars and customize as needed
+
+# Region Configuration
+# Define AWS regions with CIDR base (first two octets) and BGP ASN
+regions = {
+  "us-east-1" = {
+    cidr_base = "10.1"  # Results in 10.1.0.0/16 for PE, 10.1.16.0/20 for NPE
+    asn       = 64512
+  }
+  "us-west-2" = {
+    cidr_base = "10.2"
+    asn       = 64513
+  }
+  "eu-west-1" = {
+    cidr_base = "10.3"
+    asn       = 64514
+  }
+  "ap-southeast-1" = {
+    cidr_base = "10.4"
+    asn       = 64515
+  }
+}
+
+# Environment Configuration
+# PE: Production Environment (65,536 IPs per region)
+# NPE: Non-Production Environment (4,096 IPs per region)
+environments = {
+  pe = {
+    cidr_suffix = "0.0/16"
+  }
+  npe = {
+    cidr_suffix = "16.0/20"
+  }
+}
+
+# CloudWAN Segments
+# Segments provide network isolation and routing policies
+cloudwan_segments = {
+  pe = {
+    description                   = "Production Environment"
+    require_attachment_acceptance = false
+    isolate_attachments           = false
+    send_via_nfg                  = ["inspection"]
+    send_via_conditions           = ["destination-segment-is pe"]
+  }
+  npe = {
+    description                   = "Non-Production Environment"
+    require_attachment_acceptance = false
+    isolate_attachments           = false
+    send_via_nfg                  = ["inspection"]
+    send_via_conditions           = ["destination-segment-is npe"]
+  }
+}
+
+# Network Function Groups
+# NFGs enable traffic inspection and security services
+network_function_groups = {
+  inspection = {
+    description = "Network function group for traffic inspection"
+  }
+}
+
+# Optional: Project Settings
+# project_name = "cloudwan-poc"
+# environment  = "demo"
+
+# Optional: Migration Control
+# Set to true to route traffic through CloudWAN instead of TGW
+# use_cloudwan = false
